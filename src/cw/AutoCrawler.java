@@ -53,13 +53,16 @@ public class AutoCrawler extends TimerTask{
 	}
 	
 	//清空資料、修改資料
-	
+	/*
 	public static void main(String args[])
 	{
 		Timer timer = new Timer();
 		AutoCrawler ac = new AutoCrawler();
 		timer.schedule(ac, 0, 60000);
 	}
+	*/
+	
+	
 	
 }
 

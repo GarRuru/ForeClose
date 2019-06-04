@@ -9,6 +9,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.meterware.httpunit.WebClient;
+
 //法拍屋網站：http://aomp.judicial.gov.tw/abbs/wkw/WHD2A00.jsp
 
 public class Crawler {
@@ -16,8 +20,399 @@ public class Crawler {
     private static final String[] districtCourt = {"臺灣台北地方法院", "臺灣新北地方法院", "臺灣士林地方法院", "臺灣桃園地方法院", "臺灣新竹地方法院", "臺灣苗栗地方法院",
     		"臺灣臺中地方法院", "臺灣南投地方法院", "臺灣彰化地方法院", "臺灣雲林地方法院", "臺灣嘉義地方法院", "臺灣臺南地方法院", "臺灣橋頭地方法院", "臺灣高雄地方法院", 
     		"臺灣屏東地方法院", "臺灣臺東地方法院", "臺灣花蓮地方法院", "臺灣宜蘭地方法院", "臺灣基隆地方法院", "臺灣澎湖地方法院", "福建金門地方法院", "福建連江地方法院"};
-    private static ArrayList<Integer> googleSearchResults = new ArrayList<>(); //存google查的資料數量的array
+    //private static ArrayList<Integer> googleSearchResults = new ArrayList<>(); //存google查的資料數量的array
 
+    
+    
+    
+	//依照地址搜尋: 地址與法院名稱
+	public static ArrayList<ArrayList<String>> searchCrno(String address, String Court)
+	{	
+		ArrayList<ArrayList<String>> totalData = new ArrayList<ArrayList<String>>();
+		ArrayList<String> returnVal = new ArrayList<String>();
+		System.out.println("Address:" + address + ",法院:" + Court);
+        try {
+			String addressVAR = URLEncoder.encode(address, "BIG5");
+			String urlString = "http://aomp.judicial.gov.tw"
+	                + "/abbs/wkw/WHD2A03.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
+	                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
+	                + "&crmno="
+	                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
+	                + "&registeno=" + addressVAR
+	                + "&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
+	                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
+            try {
+                URL url = new URL(urlString);
+                URLConnection urlConnection = url.openConnection();
+                HttpURLConnection connection = null;
+                if(urlConnection instanceof HttpURLConnection)
+                    connection = (HttpURLConnection) urlConnection;
+                else{
+                    System.out.println("連線失敗");
+                    return null;
+                }
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"Big5"));
+                String current;
+                String resultDoc = "";
+                while((current = br.readLine()) != null)
+                    resultDoc += current + "\n";
+                //System.out.println(resultDoc);
+                if(resultDoc.contains("查無資料"))
+                {
+                	returnVal.add("Not Found");
+                	totalData.add(returnVal);
+                	return totalData;
+                }
+                //找到的情況
+                else
+                {
+                    Document doc = Jsoup.connect(urlString).userAgent("Mozilla/5.0").get();
+                    /*//地址那欄，固定只抓第一個找到的結果
+                    Elements results = doc.select("td[width=20%]");
+                    String tempTable[] = results.get(1).toString().split("<|>");
+                    String findAddr = tempTable[4].substring(1);
+                    findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+                    //案號那一欄
+                    results = doc.select("td[width=15%]");
+                    tempTable = results.get(1).toString().split("<|>");
+                    System.out.println(">>" + tempTable[2]);
+                    String findcrawNo = URLReplace(tempTable[2]);
+                    //下次法拍日
+                    results = doc.select("td[width=10%]");
+                    tempTable = results.get(1).toString().split("<|>");
+                    String nextsellDate = tempTable[4].substring(3,12); 
+                    System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
+                    //準備回傳值
+                    returnVal.add(findcrawNo);
+                    returnVal.add(findAddr);
+                    returnVal.add(Court.substring(2));
+                    returnVal.add(nextsellDate);
+                    */
+                    Elements results = doc.select("td[width=20%]");		//地址
+    				Elements results2 = doc.select("td[width=15%]");	//案號
+    				Elements results3 = doc.select("td[width=10%]");	//法拍日
+    				Elements results4 = doc.select("td[width=6%]");		//點交
+    				Elements results5 = doc.select("table[width=100%] td:not([width])td:not([align])td:not([class])");		//價錢
+    				for(int i = 1; i < results.size(); i++) {
+    					ArrayList<String> crawdata = new ArrayList<String>();
+    					//地址那欄，顯示在表格上的是第一個找到的結果，剩餘的收入另一個List
+    	                String tempTable[] = results.get(i).toString().split("<|>");
+    	                String findAddr = tempTable[4].substring(1);
+    	                findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+    	                //案號那一欄
+    	                tempTable = results2.get(i).toString().split("<|>");
+    	                String findcrawNo = URLReplace(tempTable[2]);
+    	                //下次法拍日
+    	                tempTable = results3.get(i).toString().split("<|>");
+    	                String nextsellDate = tempTable[4].substring(3,12); 
+                        System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
+                        //拍賣價錢
+                        tempTable = results5.get((i-1)*3).toString().split("<|>");
+    	                String price = URLReplace(tempTable[2]);
+    	                price = price.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+                        //點交
+    	                tempTable = results4.get(i).toString().split("<|>");
+    	                String handover = URLReplace(tempTable[4]);
+    	                handover = handover.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+                        //網站
+                        tempTable = results.get(i).toString().split("<|>");
+                        String tt[] =  tempTable[3].split("\"");
+    	                String addressURL = tt[1];
+    	                System.out.println("拍賣價錢：" + price + " " + handover + " " +addressURL);
+                        //準備回傳值
+    	                crawdata.add(findcrawNo);
+    	                crawdata.add(findAddr);
+    	                crawdata.add(Court);//.substring(2));
+    	                crawdata.add(nextsellDate);
+    	                crawdata.add(price);
+    	                crawdata.add(handover);
+    	                crawdata.add(addressURL);
+    	                totalData.add(crawdata);
+    	                System.out.printf("totalDatasize:%d %d\nvalue:%s\n",totalData.size(), totalData.get(0).size(),totalData.get(0).get(0).toString());
+    				}
+    				
+    				for(ArrayList<String> s: totalData)
+    				{
+    					for(String z: s)
+    					{
+    						System.out.print("[" + z + "]");
+    					}
+    					System.out.println("");
+    				}
+    				System.out.println("===========");
+                	return totalData;
+                	
+                }
+                
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+		//其他不可預期的錯誤 
+        return null;
+	}
+    
+	//依照字號搜尋: 字號與法院名稱
+	public static ArrayList<ArrayList<String>> searchCrno(int crmno,String Court)	
+	{
+		ArrayList<ArrayList<String>> totalData = new ArrayList<ArrayList<String>>();
+		ArrayList<String> returnVal = new ArrayList<String>();
+        try 
+        {
+			String urlString = "http://aomp.judicial.gov.tw"
+                + "/abbs/wkw/WHD2A03.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
+                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
+                + "&crmno=" + String.format("%06d", crmno)
+                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
+                + "&registeno="
+                + "&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
+                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
+            URL url = new URL(urlString);
+			URLConnection urlConnection = url.openConnection();
+            HttpURLConnection connection = null;
+            if(urlConnection instanceof HttpURLConnection)
+                connection = (HttpURLConnection) urlConnection;
+            else
+            {
+                System.out.println("連線失敗");
+                return null;
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"Big5"));
+            String current = "";
+            String resultDoc = "";
+            while((current = br.readLine()) != null)
+                resultDoc += current + "\n";
+            System.out.println(resultDoc);
+            if(resultDoc.contains("查無資料"))
+            {
+            	returnVal.add("Not Found");
+            	totalData.add(returnVal);
+            	return totalData;
+            }
+			else
+			{
+				Document doc = Jsoup.connect(urlString).userAgent("Mozilla/5.0").get();
+				/*
+                //地址那欄，固定只抓第一個找到的結果
+                Elements results = doc.select("td[width=20%]");
+                String tempTable[] = results.get(1).toString().split("<|>");
+                String findAddr = tempTable[4].substring(1);
+                findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+                //案號那一欄
+                results = doc.select("td[width=15%]");
+                tempTable = results.get(1).toString().split("<|>");
+                String findcrawNo = URLReplace(tempTable[2]);
+                //下次法拍日
+                results = doc.select("td[width=10%]");
+                tempTable = results.get(1).toString().split("<|>");
+                String nextsellDate = tempTable[4].substring(3,12); 
+                System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
+                //準備回傳值
+                returnVal.add(findcrawNo);
+                returnVal.add(findAddr);
+                returnVal.add(Court.substring(2));
+                returnVal.add(nextsellDate);
+                */
+				Elements results = doc.select("td[width=20%]");		//地址
+				Elements results2 = doc.select("td[width=15%]");	//案號
+				Elements results3 = doc.select("td[width=10%]");	//法拍日
+				Elements results4 = doc.select("td[width=6%]");		//點交
+				Elements results5 = doc.select("table[width=100%] td:not([width])td:not([align])td:not([class])");		//價錢
+				for(int i = 1; i < results.size(); i++) {
+					ArrayList<String> crawdata = new ArrayList<String>();
+					//地址那欄，固定只抓第一個找到的結果
+	                String tempTable[] = results.get(i).toString().split("<|>");
+	                String findAddr = tempTable[4].substring(1);
+	                findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+	                //案號那一欄
+	                tempTable = results2.get(i).toString().split("<|>");
+	                String findcrawNo = URLReplace(tempTable[2]);
+	                //下次法拍日
+	                tempTable = results3.get(i).toString().split("<|>");
+	                String nextsellDate = tempTable[4].substring(3,12); 
+	                System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
+	                //拍賣價錢
+                    tempTable = results5.get((i-1)*3).toString().split("<|>");
+	                String price = URLReplace(tempTable[2]);
+	                System.out.println("yeeee"+price);
+                    //點交
+	                tempTable = results4.get(i).toString().split("<|>");
+	                String handover = URLReplace(tempTable[4]);
+	                handover = handover.replaceAll("\\s*", ""); //去掉頭尾多餘空白
+	                System.out.println(handover);
+                    //網站
+                    tempTable = results.get(i).toString().split("<|>");
+                    String tt[] =  tempTable[3].split("\"");
+	                String addressURL = tt[1];
+	                System.out.println(addressURL);
+	                //準備回傳值
+	                crawdata.add(findcrawNo);
+	                crawdata.add(findAddr);
+	                crawdata.add(Court);//.substring(2));
+	                crawdata.add(nextsellDate);
+	                crawdata.add(price);
+	                crawdata.add(handover);
+	                crawdata.add(addressURL);
+	                totalData.add(crawdata);
+	                System.out.printf("totalDatasize:%d %d\nvalue:%s\n",totalData.size(), totalData.get(0).size(),totalData.get(0).get(0).toString());
+				}
+                
+            	return totalData;
+			}
+        } 
+        catch (IOException e) 
+        {
+			e.printStackTrace();
+		}
+		//其他不可預期的錯誤
+        return null;
+
+	}
+
+	//下載成Excel 格式的檔案
+	//By Common.io
+    public static int downloadDistrictCourtData(String Court, String DestFolder)
+    {
+    	try 
+    	{
+            String urlString = "http://aomp.judicial.gov.tw"
+                + "/abbs/wkw/WHD2A03_DOWNLOAD.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
+                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
+                + "&crmno="
+                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
+                + "&registeno=&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm"
+                + "&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
+                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
+            URL url = new URL(urlString);
+            URLConnection urlConnection = url.openConnection();
+            HttpURLConnection connection = null;
+            if(urlConnection instanceof HttpURLConnection)
+                connection = (HttpURLConnection) urlConnection;
+            else{
+                System.out.println("!!! 連線失敗 !!!");
+                return -1;
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String current;
+            String resultDoc = "";
+            while((current = br.readLine()) != null)
+                resultDoc += current + "\n";
+            if(!(resultDoc.contains("查無資料"))){
+                Date today = new Date();
+                URL source = new URL(urlString);
+                //String theStrDestDir = "./";
+                File theStockDest = new File(DestFolder);
+                FileUtils.forceMkdir(theStockDest);
+                File destination = new File(DestFolder + '/'+ Court + "-"
+                                    + String.format("%04d", today.getYear() + 1900)
+                                    + String.format("%02d", today.getMonth() + 1)
+                                    + String.format("%02d", today.getDate())
+                                    + ".xls");
+                FileUtils.copyURLToFile(source, destination);
+                System.out.println("> 檔案下載完成!");
+                return 1;	//Success
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    	return -1;
+    }
+    
+    //第2功能:查google搜尋法拍(jsoup)
+    public static String[] searchGoogleDataResults(String address) throws InterruptedException{ 
+        String returnVal[] = new String[2];
+        System.out.println("查詢目標:" + address);
+    	try 
+    	{
+            final String googleHead = "https://www.google.com/search?q=";
+            String search = "\"" + address + "\" \"" + "法拍\"";
+            search = googleHead + search;
+            //因為Google偷偷改掉網頁格式，div死去A_A
+            /*Connection c = Jsoup.connect(search).userAgent("Mozilla/5.0").timeout(2000);
+            //Thread.sleep(2000);
+            //Document doc = c.get();*/
+            //替代品: HttpUnit(HtmlUnit)
+            com.gargoylesoftware.htmlunit.WebClient wbc = new com.gargoylesoftware.htmlunit.WebClient(BrowserVersion.CHROME);
+            HtmlPage rootPage = wbc.getPage(search);
+            wbc.waitForBackgroundJavaScript(750);
+            Document doc = Jsoup.parse(rootPage.asXml());
+            //System.out.println(doc.toString());
+            Elements results = doc.select("div#resultStats");
+            String temp = results.text();
+            String[] temp1 = temp.split(" ");
+            String[] temp2 = temp1[1].split(",");
+            String recordStr = "";
+            for(String i : temp2){
+                recordStr += i;
+            }
+            int record = Integer.parseInt(recordStr);
+//          googleSearchResults.add(record);
+//          System.out.println(googleSearchResults);
+            returnVal[0] = address;
+            returnVal[1] = recordStr;
+            return returnVal;
+        } 
+    	catch (IOException e) 
+    	{
+            e.printStackTrace();
+        }
+        return null;	//搜尋出錯
+    }
+    
+    //更新Google趨勢：只需回傳數字
+    public static int UpdateGoogleDataResults(String address)
+    {
+        System.out.println("更新目標:" + address);
+    	try 
+    	{
+            final String googleHead = "https://www.google.com/search?q=";
+            String search = "\"" + address + "\" \"" + "法拍\"";
+            search = googleHead + search;
+            com.gargoylesoftware.htmlunit.WebClient wbc = new com.gargoylesoftware.htmlunit.WebClient(BrowserVersion.CHROME);
+            HtmlPage rootPage = wbc.getPage(search);
+            wbc.waitForBackgroundJavaScript(750);
+            Document doc = Jsoup.parse(rootPage.asXml());
+            //System.out.println(doc.toString());
+            Elements results = doc.select("div#resultStats");
+            String temp = results.text();
+            String[] temp1 = temp.split(" ");
+            String[] temp2 = temp1[1].split(",");
+            String recordStr = "";
+            for(String i : temp2){
+                recordStr += i;
+            }
+            int record = Integer.parseInt(recordStr);
+            return record;
+        } 
+    	catch (IOException e) 
+    	{
+            e.printStackTrace();
+        }
+        return -1;	//搜尋出錯
+
+    }
+    
+    //去除網頁內容中的特定字元集
+    public static String URLReplace(String s)
+    {
+    	String E;
+    	E = s.replaceAll("&amp;","&");
+    	E = E.replaceAll("&lt;","<");
+    	E = E.replaceAll("&gt;",">");
+    	E = E.replaceAll("&nbsp;"," ");
+    	E = E.replaceAll("&#39;","\'");
+    	E = E.replaceAll("&quot;","\"");
+    	//System.out.println("Convert: " + E);
+    	return E;
+    }
+    
     //由輸入的地址自動判定歸屬的法院: 回傳法院的英文縮寫
     //Source: https://www.judicial.gov.tw/jw9706/pdf/20150814-1760-d6.pdf?sid=C0OV36
     public static String addressCheck(String address)
@@ -123,239 +518,8 @@ public class Crawler {
     	
     	return "None";
     }
-    
-    
-    //TODO : 回傳值改成String[]，如果是空字串就是沒有找到，或是在第一個欄位插入識別字？
-	//依照地址搜尋: 地址與法院名稱
-	public static ArrayList<String> searchCrno(String address, String Court)
-	{		
-		ArrayList<String> returnVal = new ArrayList<String>();
-		System.out.println("Address:" + address + ",法院:" + Court);
-        try {
-			String addressVAR = URLEncoder.encode(address, "BIG5");
-			String urlString = "http://aomp.judicial.gov.tw"
-	                + "/abbs/wkw/WHD2A03.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
-	                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
-	                + "&crmno="
-	                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
-	                + "&registeno=" + addressVAR
-	                + "&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
-	                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
-            try {
-                URL url = new URL(urlString);
-                URLConnection urlConnection = url.openConnection();
-                HttpURLConnection connection = null;
-                if(urlConnection instanceof HttpURLConnection)
-                    connection = (HttpURLConnection) urlConnection;
-                else{
-                    System.out.println("連線失敗");
-                    return null;
-                }
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"Big5"));
-                String current;
-                String resultDoc = "";
-                while((current = br.readLine()) != null)
-                    resultDoc += current + "\n";
-                System.out.println(resultDoc);
-                if(resultDoc.contains("查無資料"))
-                {
-                	returnVal.add("Not Found");
-                	return returnVal;
-                }
-                //找到的情況
-                else
-                {
-                    Document doc = Jsoup.connect(urlString).userAgent("Mozilla/5.0").get();
-                    //地址那欄，固定只抓第一個找到的結果
-                    Elements results = doc.select("td[width=20%]");
-                    String tempTable[] = results.get(1).toString().split("<|>");
-                    String findAddr = tempTable[4].substring(1);
-                    findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
-                    //案號那一欄
-                    results = doc.select("td[width=15%]");
-                    tempTable = results.get(1).toString().split("<|>");
-                    String findcrawNo = tempTable[2];
-                    //下次法拍日
-                    results = doc.select("td[width=10%]");
-                    tempTable = results.get(1).toString().split("<|>");
-                    String nextsellDate = tempTable[4].substring(3,12); 
-                    System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
-                    //準備回傳值
-                    returnVal.add(findcrawNo);
-                    returnVal.add(findAddr);
-                    returnVal.add(Court.substring(2));
-                    returnVal.add(nextsellDate);
-                	return returnVal;
-                	
-                }
-                
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-			e.printStackTrace();
-		}
-        
-		//其他不可預期的錯誤 
-        return null;
-	}
-    
-	//依照字號搜尋: 字號與法院名稱
-	public static ArrayList<String> searchCrno(int crmno,String Court)	
-	{
-		ArrayList<String> returnVal = new ArrayList<String>();
-        try 
-        {
-			String urlString = "http://aomp.judicial.gov.tw"
-                + "/abbs/wkw/WHD2A03.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
-                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
-                + "&crmno=" + String.format("%06d", crmno)
-                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
-                + "&registeno="
-                + "&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
-                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
-            URL url = new URL(urlString);
-			URLConnection urlConnection = url.openConnection();
-            HttpURLConnection connection = null;
-            if(urlConnection instanceof HttpURLConnection)
-                connection = (HttpURLConnection) urlConnection;
-            else
-            {
-                System.out.println("連線失敗");
-                return null;
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(),"Big5"));
-            String current = "";
-            String resultDoc = "";
-            while((current = br.readLine()) != null)
-                resultDoc += current + "\n";
-            System.out.println(resultDoc);
-            if(resultDoc.contains("查無資料"))
-            {
-            	returnVal.add("Not Found");
-            	return returnVal;
-            }
-			else
-			{
-				Document doc = Jsoup.connect(urlString).userAgent("Mozilla/5.0").get();
-                //地址那欄，固定只抓第一個找到的結果
-                Elements results = doc.select("td[width=20%]");
-                String tempTable[] = results.get(1).toString().split("<|>");
-                String findAddr = tempTable[4].substring(1);
-                findAddr = findAddr.replaceAll("\\s*", ""); //去掉頭尾多餘空白
-                //案號那一欄
-                results = doc.select("td[width=15%]");
-                tempTable = results.get(1).toString().split("<|>");
-                String findcrawNo = tempTable[2];
-                //下次法拍日
-                results = doc.select("td[width=10%]");
-                tempTable = results.get(1).toString().split("<|>");
-                String nextsellDate = tempTable[4].substring(3,12); 
-                System.out.println("案號："+ findcrawNo + " 地址：[" + findAddr + "] 下次拍賣時間:" + nextsellDate);
-                //準備回傳值
-                returnVal.add(findcrawNo);
-                returnVal.add(findAddr);
-                returnVal.add(Court.substring(2));
-                returnVal.add(nextsellDate);
-            	return returnVal;
-			}
-        } 
-        catch (IOException e) 
-        {
-			e.printStackTrace();
-		}
-		//其他不可預期的錯誤
-        return null;
 
-	}
-
-	//下載成Excel 格式的檔案
-	//By Common.io
-    public static int downloadDistrictCourtData(String Court, String DestFolder)
-    {
-    	try 
-    	{
-            String urlString = "http://aomp.judicial.gov.tw"
-                + "/abbs/wkw/WHD2A03_DOWNLOAD.jsp?50B8DA8E0FA862F5A04E060849A1EF7D=C3743233306CA43032EAA3FF8116DC1A"
-                + "&hsimun=all&ctmd=all&sec=all&saledate1=&saledate2=&crmyy=&crmid="
-                + "&crmno="
-                + "&dpt=&minprice1=&minprice2=&saleno=&area1=&area2="
-                + "&registeno=&checkyn=all&emptyyn=all&rrange=%A4%A3%A4%C0&comm_yn=&owner1=&order=odcrm"
-                + "&courtX=" + district[Arrays.asList(districtCourt).indexOf(Court)]
-                + "&proptypeX=C52&saletypeX=1&query_typeX=db";
-            URL url = new URL(urlString);
-            URLConnection urlConnection = url.openConnection();
-            HttpURLConnection connection = null;
-            if(urlConnection instanceof HttpURLConnection)
-                connection = (HttpURLConnection) urlConnection;
-            else{
-                System.out.println("!!! 連線失敗 !!!");
-                return -1;
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String current;
-            String resultDoc = "";
-            while((current = br.readLine()) != null)
-                resultDoc += current + "\n";
-            if(!(resultDoc.contains("查無資料"))){
-                Date today = new Date();
-                URL source = new URL(urlString);
-                //String theStrDestDir = "./";
-                File theStockDest = new File(DestFolder);
-                FileUtils.forceMkdir(theStockDest);
-                File destination = new File(DestFolder + '/'+ Court + "-"
-                                    + String.format("%04d", today.getYear() + 1900)
-                                    + String.format("%02d", today.getMonth() + 1)
-                                    + String.format("%02d", today.getDate())
-                                    + ".xls");
-                FileUtils.copyURLToFile(source, destination);
-                System.out.println("> 檔案下載完成!");
-                return 1;	//Success
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    	return -1;
-    }
     
     
-    public static String[] searchGoogleDataResults(String address) throws InterruptedException{ //第2功能:查google搜尋法拍(jsoup)
-        String returnVal[] = new String[2];
-        System.out.println("查詢目標:" + address);
-    	try 
-    	{
-            final String googleHead = "https://www.google.com/search?q=";
-            String search = address + " " + "法拍";
-            search = googleHead + search + "&amp;gbv=1&amp;sei=697oXNPuH6G1mAXb06f4Ag";
-            Connection c = Jsoup.connect(search).userAgent("Mozilla/5.0").timeout(2000);
-            //Thread.sleep(2000);
-            Document doc = c.get();
-            System.out.println(doc.toString());
-            Elements results = doc.select("div#resultStats");
-            String temp = results.text();
-            System.out.println("[" + results + "]");
-            String[] temp1 = temp.split(" ");
-            String[] temp2 = temp1[1].split(",");
-            String recordStr = "";
-            for(String i : temp2){
-                recordStr += i;
-            }
-            int record = Integer.parseInt(recordStr);
-            googleSearchResults.add(record);
-            System.out.println(googleSearchResults);
-            returnVal[0] = address;
-            returnVal[1] = recordStr;
-            return returnVal;
-        } 
-    	catch (IOException e) 
-    	{
-            e.printStackTrace();
-        }
-        return null;	//搜尋出錯
-    }
-
 }
+

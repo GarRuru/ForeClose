@@ -1,0 +1,53 @@
+{
+    "CRAW": [
+        {
+            "SearchKeyword": "西園路",
+            "Address": "(示範資料)台北市萬華西園路389之10號",
+            "CrawNo": "106北市134404",
+            "Court": "臺灣台北地方法院",
+            "isFindable" : true,
+            "SellDate": "108/06/13",
+            "Price": "26000000",
+            "Handover": "已點交",
+            "website": "http://aomp.judicial.gov.tw/abbs/sale/tpd/10805/20142727899.019.pdf",
+            "Another":
+            [
+                {
+                    "Address": "(示範資料)台北市萬華西園路389之10號二樓的部分",
+                    "CrawNo": "106北市134405",
+                    "Court": "臺灣台北地方法院",
+                    "isFindable" : true,
+                    "SellDate": "108/06/13",
+                    "Price": "2600000",
+                    "Handover": "未點交",
+                    "website": "http://aomp.judicial.gov.tw/abbs/sale/tpd/10805/20142727899.019.pdf"
+                },
+                {
+                    "Address": "(示範資料)台北市萬華西園路389之10號三樓的部分",
+                    "CrawNo": "106北市134407",
+                    "Court": "臺灣台北地方法院",
+                    "isFindable" : true,
+                    "SellDate": "108/06/14",
+                    "Price": "2600000",
+                    "Handover": "參閱附註",
+                    "website": "http://aomp.judicial.gov.tw/abbs/sale/tpd/10805/20142727899.019.pdf"
+        
+                }
+
+            ]
+        },
+        {
+            "SearchKeyword": "知行路",
+            "Address": "(示範資料)北投區知行路277號",
+            "CrawNo": "108北市1224",
+            "Court": "臺灣士林地方法院",
+            "isFindable" : false,
+            "SellDate": "",
+            "Price": "",
+            "Handover": "未點交",
+            "website": "",
+            "Another":
+            []
+        }
+    ]
+}
