@@ -6,6 +6,7 @@ public class GTrendData {
 	private String address;					//地址
 	private ArrayList<Integer> searchCount;	//搜尋數歷史
 	private ArrayList<String> recordDate;	//搜尋時間歷史
+	private String note;
 	
 	public GTrendData()
 	{
@@ -56,6 +57,14 @@ public class GTrendData {
 		return recordDate.get(recordDate.size()-1);
 	}
 	
+	public void setNote(String note) 
+	{
+		this.note = note;
+	}
+	public String getNote()
+	{
+		return note;
+	}
 	
 	
 }

@@ -22,15 +22,15 @@ public class DetailData extends JFrame{
 		int index = 0;
 		//建立標題
 		JLabel addressTitleLabel = new JLabel("地址");
-		addressTitleLabel.setBounds(20, 30 * index, 300, 30);
+		addressTitleLabel.setBounds(20, 30 * index, 400, 30);
 		JLabel crmnoTitleLabel = new JLabel("字號");
-		crmnoTitleLabel.setBounds(320, 30 * index, 150, 30);
+		crmnoTitleLabel.setBounds(420, 30 * index, 100, 30);
 		JLabel sellDateTitleLabel = new JLabel("下次拍賣日期");
-		sellDateTitleLabel.setBounds(470, 30 * index, 100, 30);
+		sellDateTitleLabel.setBounds(520, 30 * index, 100, 30);
 		JLabel priceTitleLabel = new JLabel("拍賣價格");
-		priceTitleLabel.setBounds(570, 30 * index, 100, 30);
+		priceTitleLabel.setBounds(620, 30 * index, 100, 30);
 		JLabel handoverTitleLabel = new JLabel("點交狀態");
-		handoverTitleLabel.setBounds(670, 0, 150, 30);
+		handoverTitleLabel.setBounds(720, 30 * index, 100, 30);
 		JLabel websiteTitleLabel = new JLabel("公文網址");
 		websiteTitleLabel.setBounds(820, 30 * index, 60, 30);
 		//加進pane
@@ -44,23 +44,28 @@ public class DetailData extends JFrame{
 		//生出資料
 		for(CrawData i : detailCrawData) {
 			JLabel addressLabel = new JLabel(i.getAddress());
-			addressLabel.setBounds(20, 30 * index, 300, 30);
-			JLabel crmnoLabel = new JLabel(i.getNo());
-			crmnoLabel.setBounds(320, 30 * index, 150, 30);
+			addressLabel.setBounds(20, 30 * index, 400, 30);
+			JLabel crmnoLabel;
+			if(i.getNo().isEmpty())
+				crmnoLabel = new JLabel(i.getNo());//.substring(7));
+			else 
+				crmnoLabel = new JLabel(i.getNo().substring(7));
+			crmnoLabel.setBounds(420, 30 * index, 100, 30);
 			JLabel sellDateLabel = new JLabel(i.getsellDate());
-			sellDateLabel.setBounds(470, 30 * index, 100, 30);
+			sellDateLabel.setBounds(520, 30 * index, 100, 30);
 			JLabel priceLabel = new JLabel("" + i.getPrice());
-			priceLabel.setBounds(570, 30 * index, 100, 30);
+			priceLabel.setBounds(620, 30 * index, 100, 30);
 			JLabel handoverLabel = new JLabel(i.getHandover());
-			handoverLabel.setBounds(670, 30 * index, 150, 30);
+			handoverLabel.setBounds(720, 30 * index, 100, 30);
 			JButton websiteButton = new JButton("連結");
 			websiteButton.setBounds(820, 30 * index, 60, 30);
+			if(i.getWebsite().equals(""))
+				websiteButton.setEnabled(false);
 			
 			websiteButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
-					// TODO Auto-generated method stub
-					System.out.println("btn click");
+					System.out.println("啟動瀏覽器：開啟公文PDF連結");
 					try {
 	                    Desktop.getDesktop().browse(new URI(i.getWebsite()));
 	                    System.out.println("Open url success");

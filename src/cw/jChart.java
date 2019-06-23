@@ -2,12 +2,15 @@ package cw;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.Arrays;
+
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -20,6 +23,17 @@ public class jChart extends JFrame
 	private String[] series;	//資料數量，可能有多個
 	private String[] category;	//橫坐標：標示日期
 	private GTrendData GData;
+	private int MIN,MAX;		//搜尋次數的最大、最小值（控制座標軸Range）
+	
+	private void findMinMax(int[] data)
+	{
+		int[] dataCopy = new int[data.length];
+		System.arraycopy(data, 0, dataCopy, 0, data.length);
+		Arrays.sort(dataCopy);
+		//取上下界
+		MIN = (dataCopy[0] / 100) *100;
+		MAX = ((dataCopy[dataCopy.length-1] / 100) + 1 )*100;
+	}
 	
 	public jChart(GTrendData g) 
 	{
@@ -37,7 +51,7 @@ public class jChart extends JFrame
         setLayout(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  
         setVisible(true);
-        setBounds(150, 150, 800, 600);
+        setBounds(150, 150, 820, 620);
         
 	}
 	
@@ -69,7 +83,7 @@ public class jChart extends JFrame
         for(int i=0;i<data.length;i++)
         	dataset.addValue(data[i], series[0], category[i]);
         
-        
+        findMinMax(data);
         return dataset;  
     }  
   
@@ -80,11 +94,11 @@ public class jChart extends JFrame
     	//設定主題
 		StandardChartTheme mChartTheme = new StandardChartTheme("CN");
 		//設定標題字體
-		mChartTheme.setExtraLargeFont(new Font("標楷體", Font.PLAIN, 18));
+		mChartTheme.setExtraLargeFont(new Font("微軟正黑體", Font.PLAIN, 18));
 		//設定row字體
-		mChartTheme.setLargeFont(new Font("標楷體", Font.PLAIN, 18));
+		mChartTheme.setLargeFont(new Font("微軟正黑體", Font.PLAIN, 18));
 		//設定column字體
-		mChartTheme.setRegularFont(new Font("標楷體", Font.PLAIN, 18));
+		mChartTheme.setRegularFont(new Font("微軟正黑體", Font.PLAIN, 18));
 		//設定chart類別的主題
 		ChartFactory.setChartTheme(mChartTheme);
 
@@ -104,6 +118,10 @@ public class jChart extends JFrame
     	renderer.setUseSeriesOffset(true);		//數據偏移量(?)
     	renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator());
     	renderer.setBaseItemLabelsVisible(true);
+    	//取得縱座標並修改範圍
+    	ValueAxis range = plot.getRangeAxis();
+    	range.setRange(MIN,MAX);
+    	
     	return jfreechart;
     
          

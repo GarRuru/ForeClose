@@ -60,6 +60,7 @@ public class Crawler {
                 if(resultDoc.contains("查無資料"))
                 {
                 	returnVal.add("Not Found");
+                	returnVal.add(Court);
                 	totalData.add(returnVal);
                 	return totalData;
                 }
@@ -191,6 +192,7 @@ public class Crawler {
             if(resultDoc.contains("查無資料"))
             {
             	returnVal.add("Not Found");
+            	returnVal.add(Court);
             	totalData.add(returnVal);
             	return totalData;
             }
@@ -239,6 +241,7 @@ public class Crawler {
 	                //拍賣價錢
                     tempTable = results5.get((i-1)*3).toString().split("<|>");
 	                String price = URLReplace(tempTable[2]);
+	                price = price.replaceAll("\\s*", ""); //去掉頭尾多餘空白
 	                System.out.println("yeeee"+price);
                     //點交
 	                tempTable = results4.get(i).toString().split("<|>");
@@ -376,6 +379,7 @@ public class Crawler {
             String search = "\"" + address + "\" \"" + "法拍\"";
             search = googleHead + search;
             com.gargoylesoftware.htmlunit.WebClient wbc = new com.gargoylesoftware.htmlunit.WebClient(BrowserVersion.CHROME);
+            //wbc.getOptions().setThrowExceptionOnScriptError(false);		//似乎可以停用Exception資訊
             HtmlPage rootPage = wbc.getPage(search);
             wbc.waitForBackgroundJavaScript(750);
             Document doc = Jsoup.parse(rootPage.asXml());

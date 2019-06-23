@@ -3,6 +3,7 @@ package cw;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -31,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
@@ -43,9 +47,12 @@ import org.json.JSONObject;
 public class UX {
 	public String ConfigLoadString;
 	
-	//設定類參數
-	private boolean autoRefresh;
-	private int updateFreq;	
+	//設定類參數: 定時爬蟲相關
+	public static int currentDBVersion = 27;
+	public static boolean autoRefresh;
+	public static int updateHR;
+	private FrameToFrame me;
+
 	
 	//UI元件
 	private JFrame frmParser;
@@ -64,6 +71,7 @@ public class UX {
 			public void run() {
 				try {
 					UX window = new UX();
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 					window.frmParser.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -76,6 +84,7 @@ public class UX {
 	 * Create the application.
 	 */
 	public UX() {
+		setUIFont(new javax.swing.plaf.FontUIResource("微軟正黑體",Font.PLAIN,13));
 		ConfigLoadString = LoadData();
 		JSONParse(ConfigLoadString);
 		initialize();
@@ -88,42 +97,30 @@ public class UX {
 		String jsonBuffer = "";
 		//File file = new File("./config.json");	
 		BufferedReader reader = null;
-		try
-		{
+		try{
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream("./config.json"),"UTF-8"));
 			String tempString = null;
 			int line = 1;
-			while((tempString = reader.readLine()) != null)
-			{
+			while((tempString = reader.readLine()) != null){
 				//System.out.println("Line #" + line + ": " + tempString);
 				jsonBuffer += tempString;
 				line++;
 			}
 			reader.close();
 			//jsonBuffer.substring(1);	//去除JSON檔案裡因編輯器塞入的header 字元(BOM)
-		}
-		catch (java.io.FileNotFoundException ffe)
-		{
+		}catch (java.io.FileNotFoundException ffe){
 			ffe.printStackTrace();
 			System.out.println("找不到config.json，程式初始化...");
-			autoRefresh = false;
-			updateFreq = 0;
-		}
-		catch (IOException e)
-		{
+			autoRefresh = true;
+			updateHR = 9;	//預設是9點
+			return "";
+		}catch (IOException e){
 			e.printStackTrace();
-		}
-		finally
-		{
-
-			if(reader != null)
-			{
-				try 
-				{
+		}finally{
+			if(reader != null){
+				try {
 					reader.close();
-				}
-				catch(IOException e1)
-				{
+				}catch(IOException e1){
 					e1.printStackTrace();
 				}			
 			}
@@ -133,18 +130,38 @@ public class UX {
 	
 	private void JSONParse(String input)
 	{
+		if(input.equals(""))
+			return;
 		JSONObject J;
-		try
-		{
+		try{
 			J = new JSONObject(input);
 			//設定參數
 			autoRefresh = (boolean)J.get("AutoRefresh");
-			updateFreq = (int)J.getInt("UpdateFreq");
-		
-			//System.out.println("Load File From Config Complete.");
-		}
-		catch(Exception e)
-		{
+			updateHR = (int)J.getInt("UpdateHR");
+			int FileVersion = Integer.parseInt(J.get("DBVersion").toString());
+			if(updateHR>23 || updateHR<0)
+				updateHR = 9;
+			if(FileVersion != currentDBVersion)
+				throw new org.json.JSONException("版本不一致呦!");
+			
+			//System.out.println("Load Fisle From Config Complete.");
+		}catch(org.json.JSONException jsje) {
+			int dialogBtn = JOptionPane.YES_NO_OPTION;
+			dialogBtn = JOptionPane.showConfirmDialog(null, "資料庫需要升級以支援目前版本，要執行嗎？","資料庫版本不一致",dialogBtn);
+			System.out.println("選擇："+dialogBtn);
+			if(dialogBtn == JOptionPane.YES_OPTION)
+			{
+				System.out.println("升級資料庫...!!!");
+				DBCheck db = new DBCheck();
+				db.DBUpdate();
+				JOptionPane.showMessageDialog(null, "資料庫升級完成!","完成",JOptionPane.INFORMATION_MESSAGE);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "<html>放棄升級，程式將結束。<br>建議先備份資料庫後再行升級!</html>","程式即將關閉...",JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
+			}
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
@@ -165,7 +182,7 @@ public class UX {
 		frmParser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmParser.getContentPane().setLayout(null);
 		frmParser.setVisible(true);
-		
+		//UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		
 		//分頁標籤
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -212,6 +229,22 @@ public class UX {
 		panel2 = new GTrendTrackUX();
 		frmParser.getContentPane().add(panel2);
 		
+		//計時器設定(Global Settings)
+		JButton settingsBtn = new JButton("設定");
+		settingsBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+				TimerSetUX gtsu= new TimerSetUX();
+				me=panel2;
+        		gtsu.addListener(me);
+        	}
+        });
+
+		settingsBtn.setBounds(620, 6, 66, 29);
+		frmParser.getContentPane().add(settingsBtn);
+
+		
+		
+		
 		//關於我們
 		JButton aboutBtn = new JButton("關於");
 		aboutBtn.addActionListener(new ActionListener() {
@@ -220,18 +253,23 @@ public class UX {
 				aboutUS.setBounds(150,150,400,200);
 				aboutUS.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				aboutUS.getContentPane().setLayout(null);
-				JLabel intro = new JLabel("法拍屋爬蟲系統 2.1");
+				JLabel intro = new JLabel("法拍屋爬蟲系統 2.71");
 				intro.setBounds(10,0,400,100);
 				intro.setFont(new Font("微軟正黑體",Font.PLAIN,13));
 				JLabel intro2 = new JLabel("作者：鄒承皓、陳育祥、陳育軒\n");
 				intro2.setBounds(10,30,400,100);
 				intro2.setFont(new Font("微軟正黑體",Font.PLAIN,13));
-
+				JButton intro3 = new JButton("更新紀錄");
+				intro3.setBounds(70,120,77,39);
+				intro3.setFont(new Font("微軟正黑體",Font.PLAIN,13));
+				
 				aboutUS.getContentPane().add(intro);
 				aboutUS.getContentPane().add(intro2);
+				aboutUS.getContentPane().add(intro3);
 				JButton closeBtn = new JButton("Close");
-				closeBtn.setBounds(150,120,77,39);
+				closeBtn.setBounds(220,120,77,39);
 				aboutUS.getContentPane().add(closeBtn);
+			
 				closeBtn.addActionListener(new ActionListener()
 				{
 				public void actionPerformed(ActionEvent e) {
@@ -239,8 +277,22 @@ public class UX {
 				}
 				});
 				aboutUS.setVisible(true);
+				
+				intro3.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						System.out.println("啟動瀏覽器：開啟更新紀錄");
+						try {
+		                    Desktop.getDesktop().browse(new URI("https://hackmd.io/@GarRuru/S1bEO-TJB"));
+		                    System.out.println("成功開啟");
+		                } catch (URISyntaxException | IOException ex) {
+		                    JOptionPane.showMessageDialog(null, "Fail");
+		                    System.out.println("Open url fail");
+		                }
+					}		
+				});
 			}
 		});
+		
 		aboutBtn.setBounds(686, 6, 66, 29);
 		frmParser.getContentPane().add(aboutBtn);
 		
@@ -250,13 +302,17 @@ public class UX {
 				switch(tabbedPane.getSelectedIndex())
 				{
 				case 0:
-					JOptionPane.showMessageDialog(frmParser,"法拍屋爬蟲" ,"提示",JOptionPane.PLAIN_MESSAGE);
+					JOptionPane.showMessageDialog(frmParser,"<html>法拍屋爬蟲<br><br>"
+							+ "輸入地址與選擇法院，可以查詢目前法拍資料庫上<br>是否存在相關紀錄</html>" ,"提示 - 法拍屋爬蟲",JOptionPane.PLAIN_MESSAGE);
 					break;
 				case 1:
-					JOptionPane.showMessageDialog(frmParser,"報表匯出" ,"提示",JOptionPane.PLAIN_MESSAGE);
+					JOptionPane.showMessageDialog(frmParser,"<html>報表匯出<br><br>"
+							+ "預設輸出檔名為「法院名稱+輸出日期」</html>" ,"提示 - 報表匯出",JOptionPane.PLAIN_MESSAGE);
 					break;
 				case 2:
-					JOptionPane.showMessageDialog(frmParser,"Google趨勢搜尋" ,"提示",JOptionPane.PLAIN_MESSAGE);
+					JOptionPane.showMessageDialog(frmParser,"<html>Google趨勢搜尋<br><br>"
+							+ "由於Google改變了搜尋顯示的結果，導致需要較長的等待時間，大約3~5秒左右。<br>"
+							+ "請注意「刷新」及「刪除」需要勾選核取方塊才有作用</html>" ,"提示 - Google趨勢搜尋",JOptionPane.PLAIN_MESSAGE);
 					break;
 
 				}
@@ -265,8 +321,24 @@ public class UX {
 		helpBtn.setBounds(748, 6, 46, 29);
 		frmParser.getContentPane().add(helpBtn);
 
+		
+		
+
 	}
 	
+	public static void setUIFont(javax.swing.plaf.FontUIResource f)
+	{
+		java.util.Enumeration keys = UIManager.getDefaults().keys();
+		while(keys.hasMoreElements())
+		{
+			Object key = keys.nextElement();
+			Object value = UIManager.get(key);
+			if(value instanceof javax.swing.plaf.FontUIResource)
+				UIManager.put(key, f);
+		}
+	}
+	
+
 	//將資料存入TotalCrawData中 
 	//ifAddress=true是用地址查詢    false則是用字號
 }

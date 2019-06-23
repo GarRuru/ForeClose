@@ -13,23 +13,41 @@ public class MyDefaultCellEditor extends DefaultCellEditor{
 
 	private DetailButton button;
 	private ArrayList<ArrayList<CrawData>> totalCrawData;
-
-    public MyDefaultCellEditor(ArrayList<ArrayList<CrawData>> tmp) {
+	private CRAWUX saveUX = null;
+    public MyDefaultCellEditor(ArrayList<ArrayList<CrawData>> tmp, CRAWUX myUX) {
 		super(new JTextField());
 		totalCrawData = tmp;
-		
-        button = new DetailButton("詳細資料");
+		saveUX = myUX;
+        button = new DetailButton("");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             	//System.out.printf("%d %d\n",button.getRow(),button.getColum());
-            	DetailData myDD = new DetailData(totalCrawData.get(button.getRow()));
+            	//詳細資料
+            	if(button.getColumn()==4) {		
+	            	if(!totalCrawData.get(button.getRow()).get(0).getFindableBOOL())
+	            		return;
+	            	DetailData myDD = new DetailData(totalCrawData.get(button.getRow()));
+            	}
+            	//備註
+            	else if(button.getColumn()==5) {
+            		
+            		NoteUX myNote = new NoteUX(totalCrawData.get(button.getRow()).get(0).getNote(),0);
+            		myNote.Run(saveUX, totalCrawData.get(button.getRow()));
+            	}
             }
         });
     }
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected, int row, int column) {
+    	if(column==4) {		
+    		button.setText(totalCrawData.get(row).get(0).getFindable());
+    	}
+    	else if(column==5) {
+    		button.setText("備註");
+    	}
+    	//button.setEnabled(totalCrawData.get(row).get(0).getFindableBOOL());
     	button.setRow(row);
 		button.setColumn(column);
         return button;

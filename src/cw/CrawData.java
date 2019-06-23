@@ -10,13 +10,15 @@ public class CrawData {
 	private int priceINT;			
 	private String Handover;		//點交
 	private String website;			//公文連結
+	private String Note;			//備註欄位
 	
 	public CrawData()
 	{
 		super();
 	}
 	
-	public CrawData(String no,String address,String court,boolean find,String sellDate,String price,String Handover,String website)
+	public CrawData(String no,String address,String court,boolean find,String sellDate,
+					String price,String Handover,String website,String Note)
 	{
 		super();
 		searchKWord = "";
@@ -28,6 +30,7 @@ public class CrawData {
 		this.price=price;
 		this.Handover=Handover;
 		this.website=website;
+		this.Note = Note;
 		if(!price.equals(""))
 			priceINT = Integer.parseInt(price.replace(",",""));
 		else priceINT = 0;
@@ -131,5 +134,14 @@ public class CrawData {
 	public String getWebsite()
 	{
 		return website;
+	}
+	
+	public void setNote(String note)
+	{
+		Note = note;
+	}
+	public String getNote()
+	{
+		return Note;
 	}
 }
