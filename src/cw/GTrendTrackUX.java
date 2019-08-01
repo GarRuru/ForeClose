@@ -40,15 +40,15 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 	public Timer Gtimer = new Timer();
 	public AutoCrawler AutoCW = new AutoCrawler();
 	private FrameToFrame me;
-	
+
 	private String[] tableGTrendCol = {"","地址","搜尋熱度", "上次更新","初次搜尋", "持續日數"};
 	private Object[][] tableGData;
 	private JTable historyGTable;
 	private DefaultTableModel hGTmodel;
 	private ArrayList<GTrendData> GTD = new ArrayList<GTrendData>();
 	private JTextField googlesearchTextField;
-	
-	
+
+
 	public GTrendTrackUX()
 	{
 		super();
@@ -56,7 +56,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		setBounds(35, 76, 726, 485);
 		setLayout(null);
 		setVisible(false);
-		
+
 		JLabel p2TitleLabel = new JLabel("Google 趨勢分析");
 		p2TitleLabel.setFont(new Font("微軟正黑體", Font.BOLD, 24));
 		p2TitleLabel.setBounds(23, 20, 229, 53);
@@ -66,14 +66,15 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		googlesearchTextField.setBounds(129, 112, 465, 26);
 		add(googlesearchTextField);
 		googlesearchTextField.setColumns(10);
-		
+
 		JLabel titleLabel = new JLabel("輸入地址");
 		titleLabel.setBounds(42, 117, 61, 16);
 		add(titleLabel);
 
 		JButton gobutton = new JButton("加入追蹤清單");
 		gobutton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) 
+			@Override
+			public void actionPerformed(ActionEvent e)
 			{
 				Date dd = new Date();
 				String result[];
@@ -99,10 +100,10 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 				}
 				if(tableGData==null) {
 					tableGData = new Object[1][6];
-					tableGData[0][0] = Boolean.FALSE; 
-					tableGData[0][1] = ""; 
-					tableGData[0][2] = ""; 
-					tableGData[0][3] = ""; 
+					tableGData[0][0] = Boolean.FALSE;
+					tableGData[0][1] = "";
+					tableGData[0][2] = "";
+					tableGData[0][3] = "";
 					tableGData[0][4] = "";
 					tableGData[0][5] = "";
 				}
@@ -110,7 +111,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		});
 		gobutton.setBounds(606, 112, 117, 29);
 		add(gobutton);
-		
+
 		hGTmodel = new DefaultTableModel(tableGData,tableGTrendCol){
 			 private boolean ImInLoop = false;
 			 @Override
@@ -134,13 +135,14 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		JScrollPane scrollGPane = new JScrollPane(historyGTable);
 		scrollGPane.setBounds(23, 187, 684, 236);
 		add(scrollGPane);
-				
-		
-		
+
+
+
 		JButton RefreshNowBtn = new JButton("刷新");
 		RefreshNowBtn.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		
+        	@Override
+			public void actionPerformed(ActionEvent e) {
+
         		LocalDate today = LocalDate.now();
         		Date dd = new Date();
         		String curDate = (dd.getYear()+1900) + "/" + (dd.getMonth()+1) + "/" + dd.getDate();
@@ -153,7 +155,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
         				if(tempResult != -1 && !GTD.get(i).getLatestDate().equals(curDate))
         				{
         					String[] daySplit = GTD.get(i).getFullDate().get(0).split("/");
-        					LocalDate oldDate = LocalDate.of(Integer.parseInt(daySplit[0]), Month.of(Integer.parseInt(daySplit[1]))	
+        					LocalDate oldDate = LocalDate.of(Integer.parseInt(daySplit[0]), Month.of(Integer.parseInt(daySplit[1]))
         													,Integer.parseInt(daySplit[2]));
         					long daysDiff = ChronoUnit.DAYS.between(oldDate,today);
         					System.out.println("新的搜尋結果:" + tempResult);
@@ -171,14 +173,12 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
         });
 		RefreshNowBtn.setBounds(400, 450, 84, 29);
         add(RefreshNowBtn);
-		
-		
-		
-		
-		
+
+
         JButton deleteGSelItemBtn = new JButton("刪除");
         deleteGSelItemBtn.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
+        	@Override
+			public void actionPerformed(ActionEvent e) {
 
         		for(int i=0;i<historyGTable.getRowCount();i++)
         		{
@@ -196,10 +196,9 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
         deleteGSelItemBtn.setBounds(495, 450, 84, 29);
         add(deleteGSelItemBtn);
 
-        
-
         JButton showChartBtn = new JButton("顯示趨勢圖表");
         showChartBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				//沒有選到任何一列的時候：會回傳-1
 				System.out.println("顯示圖表：選到第 "+historyGTable.getSelectedRow() +"個row");
@@ -211,9 +210,10 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		});
         showChartBtn.setBounds(133, 450, 117, 29);
         add(showChartBtn);
-        
+
         JButton noteBtn = new JButton("顯示註解");
         noteBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				//沒有選到任何一列的時候：會回傳-1
 				System.out.println("顯示註解：選到第 "+historyGTable.getSelectedRow() +"個row");
@@ -227,9 +227,9 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
         noteBtn.setBounds(253, 450, 117, 29);
         add(noteBtn);
 
-        
-        
-        
+
+
+
         //表格寬度設定
 		TableColumn column = null;
 		for (int i = 0; i < 6; i++) {
@@ -244,55 +244,51 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 				column.setPreferredWidth(90);
 			else if (i == 4)
 				column.setPreferredWidth(90);
-			else 
+			else
 				column.setPreferredWidth(60);
 		}
-		
+
 		LoadConfig();		//從檔案讀取
-        tableView();		//顯示表格		
+        tableView();		//顯示表格
         forceRefresh();		//再刷資料
 
-        
-		//timer 		
-//      if(UX.autoRefresh) {
-	        Gtimer.schedule(new TimerTask() {
-	        	int scheduleCrawTime = UX.updateHR;
-				@Override
-				public void run()
-				{
-	        		Date dd = new Date();
-					System.out.println("[" + dd.getHours() + ":" + dd.getMinutes() + "]" + "[G]我又爬蟲了喔～");
-	        		String curDate = (dd.getYear()+1900) + "/" + (dd.getMonth()+1) + "/" + dd.getDate();
-	        		if(UX.autoRefresh)
-	        		{
-		        		if(dd.getHours()==scheduleCrawTime && dd.getMinutes()==0) {
-		        			System.out.println("[G]爬起來爬起來～");
-			        		for(int i=0;i<historyGTable.getRowCount();i++)
-			        		{
-			        			int tempResult = Crawler.UpdateGoogleDataResults(GTD.get(i).getAddress());
-			        			GTD.get(i).addSearchCount(tempResult);
-			        			GTD.get(i).addDate(curDate);
-			        			hGTmodel.setValueAt(tempResult, i , 2);
-			        			hGTmodel.setValueAt(curDate, i, 3);
-			        			
-			        		}
-			        		WriteConfig();
+
+
+        Gtimer.schedule(new TimerTask() {
+        	int scheduleCrawTime = UX.updateHR;
+			@Override
+			public void run()
+			{
+        		Date dd = new Date();
+				System.out.println("[" + dd.getHours() + ":" + dd.getMinutes() + "]" + "[G]我又爬蟲了喔～");
+        		String curDate = (dd.getYear()+1900) + "/" + (dd.getMonth()+1) + "/" + dd.getDate();
+        		if(UX.autoRefresh)
+        		{
+	        		if(dd.getHours()==scheduleCrawTime && dd.getMinutes()==0) {
+	        			System.out.println("[G]爬起來爬起來～");
+		        		for(int i=0;i<historyGTable.getRowCount();i++)
+		        		{
+		        			int tempResult = Crawler.UpdateGoogleDataResults(GTD.get(i).getAddress());
+		        			GTD.get(i).addSearchCount(tempResult);
+		        			GTD.get(i).addDate(curDate);
+		        			hGTmodel.setValueAt(tempResult, i , 2);
+		        			hGTmodel.setValueAt(curDate, i, 3);
+
 		        		}
-		        		else {
-		        			System.out.println("[G]爬蟲時間還沒到～");
-		        		}
+		        		WriteConfig();
 	        		}
-	        		//else System.out.println("沒事！！");
-				}
-			},0,60000);
-		}
-//	}
-	
-	
+	        		else {
+	        			System.out.println("[G]爬蟲時間還沒到～");
+	        		}
+        		}
+			}
+		},0,60000);
+	}
+
+
 	private void LoadConfig()
 	{
 		String jsonBuffer = "";
-		//File file = new File("./config.json");	
 		BufferedReader reader = null;
 		try
 		{
@@ -316,13 +312,13 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 					reader.close();
 				}catch(IOException e1){
 					e1.printStackTrace();
-				}			
+				}
 			}
 		}
 		JSONParse(jsonBuffer);
 	}
-	
-	
+
+
 	private void JSONParse(String inputStream)
 	{
 		if(inputStream.equals(""))
@@ -330,13 +326,13 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		GTD = new ArrayList<GTrendData>();
 		JSONObject J = new JSONObject(inputStream);
 		JSONArray t = J.getJSONArray("GTrend");
-		for(int i=0;i<t.length();i++)
+		for(int i = 0; i < t.length(); i++)
 		{
 			JSONObject temp = (JSONObject) t.get(i);
 			//System.out.println(temp);
 			GTrendData gtd = new GTrendData();
 			gtd.setAddress(temp.getString("Address"));
-			for(int j=0;j<temp.getJSONArray("Date").length();j++)
+			for(int j = 0; j < temp.getJSONArray("Date").length(); j++)
 			{
 				System.out.println("Load: " + temp.getJSONArray("Date").get(j).toString() + " " +temp.getJSONArray("Count").get(j));
 				gtd.addDate(temp.getJSONArray("Date").get(j).toString());
@@ -349,7 +345,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 	}
 
 	private void tableView()
-	{		
+	{
 		//準備表格顯示
 		if(GTD.size()!=0)
 		{
@@ -358,26 +354,23 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 			for(int i=0;i<GTD.size();i++)
 			{
 				String[] daySplit = GTD.get(i).getFullDate().get(0).split("/");
-				
+
 				LocalDate oldDate = LocalDate.of(Integer.parseInt(daySplit[0]),Month.of(Integer.parseInt(daySplit[1]))
 												,Integer.parseInt(daySplit[2]));
 				long daysDiff = ChronoUnit.DAYS.between(oldDate, today)+1;
-				
+
 				tableGData[i][0] = Boolean.FALSE;
 				tableGData[i][1] = GTD.get(i).getAddress();
 				tableGData[i][2] = GTD.get(i).getLatestSearchCount();
 				tableGData[i][3] = GTD.get(i).getLatestDate();
 				tableGData[i][4] = GTD.get(i).getFullDate().get(0);
 				tableGData[i][5] = daysDiff;
-				
+
 				hGTmodel.addRow(tableGData[i]);
 			}
-
 		}
-		else 
+		else
 			tableGData =  null;
-
-
 	}
 
 	//負責將更新的內容寫入Config檔案
@@ -386,7 +379,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 	{
 		try
 		{
-			Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./GTrendHistory.json"),"UTF-8"));	
+			Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./GTrendHistory.json"),"UTF-8"));
 			JSONObject json = new JSONObject();				//JSON元件
 			try
 			{
@@ -420,9 +413,9 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		}}catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-		
+
 	}
-	
+
 	//啟動強制刷新
 	private void forceRefresh()
 	{
@@ -437,7 +430,7 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 			{
 				System.out.println("資料不是最新的（加載今日數據中）");
 				String[] daySplit = GTD.get(i).getFullDate().get(0).split("/");
-				LocalDate oldDate = LocalDate.of(Integer.parseInt(daySplit[0]), Month.of(Integer.parseInt(daySplit[1]))	
+				LocalDate oldDate = LocalDate.of(Integer.parseInt(daySplit[0]), Month.of(Integer.parseInt(daySplit[1]))
 												,Integer.parseInt(daySplit[2]));
 				long daysDiff = ChronoUnit.DAYS.between(oldDate,today)+1;
 				GTD.get(i).addSearchCount(tempResult);
@@ -451,11 +444,11 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 		}
 		WriteConfig();
 	}
-	
-	public void frameToFrameEvent(Boolean setautoopen, int setcrawtime) {	
+
+	@Override
+	public void frameToFrameEvent(Boolean setautoopen, int setcrawtime) {
 		//TODO: 邏輯檢查！！
 		/*
-
 				if(!UX.autoRefresh && setautoopen) {
 			        Gtimer.schedule(new TimerTask() {
 			        	int scheduleCrawTime = setcrawtime;
@@ -474,14 +467,14 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 				        			GTD.get(i).addDate(curDate);
 				        			hGTmodel.setValueAt(tempResult, i , 2);
 				        			hGTmodel.setValueAt(curDate, i, 3);
-				        			
+
 				        		}
 				        		WriteConfig();
 			        		}
 			        		else {
 			        			System.out.println("[G']爬蟲時間還沒到～");
 			        		}
-			
+
 						}
 					},0,60000);
 				}
@@ -506,14 +499,14 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 				        			GTD.get(i).addDate(curDate);
 				        			hGTmodel.setValueAt(tempResult, i , 2);
 				        			hGTmodel.setValueAt(curDate, i, 3);
-				        			
+
 				        		}
 				        		WriteConfig();
 			        		}
 			        		else {
 			        			System.out.println("[G'']爬蟲時間還沒到～");
 			        		}
-			
+
 						}
 					},0,60000);
 				}
@@ -522,5 +515,5 @@ public class GTrendTrackUX extends JPanel implements FrameToFrame{
 					Gtimer = new Timer();
 				}
 		*/
-	} 
+	}
 }

@@ -49,14 +49,14 @@ public class DBCheck {
 			while((tempString = reader.readLine()) != null)
 				jsonBuffer += tempString;
 			reader.close();
-		}catch (IOException e){
+		} catch (IOException e){
 			e.printStackTrace();
-		}finally{
+		} finally {
 			try {
 				reader.close();
 			}catch(IOException e1){
 				e1.printStackTrace();
-			}			
+			}
 		}
 		System.out.println(jsonBuffer);
 			//Section 2-2:法拍屋建立ACD
@@ -85,8 +85,8 @@ public class DBCheck {
 				}
 				ACD.add(acd);
 			}
-			//Section 2-3:法拍屋資料重新寫回Json	
-			BufferedWriter ffx = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./CrawHistory.json"),"UTF-8"));	
+			//Section 2-3:法拍屋資料重新寫回Json
+			BufferedWriter ffx = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./CrawHistory.json"),"UTF-8"));
 			JSONObject json = new JSONObject();				//JSON元件
 			try
 			{
@@ -120,23 +120,23 @@ public class DBCheck {
 					}
 					name.put("Another",another);
 					jsonMember.put(name);
-					
+
 				}
-				
+
 				json.put("CRAW", jsonMember);
 				String writeString = json.toString();
 				ffx.write(writeString);
 				ffx.close();
 				System.out.println("成功寫入CrawHistory.json");
-		
-				
+
+
 			}catch(JSONException jse){
 				jse.printStackTrace();
 			}}catch(IOException ioe) {
 				ioe.printStackTrace();
 			}
-			
-		
+
+
 		//Section 3-1:Google趨勢資料庫讀取
 		jsonBuffer = "";
 		tempString = "";
@@ -153,10 +153,10 @@ public class DBCheck {
 				reader.close();
 			}catch(IOException e1){
 				e1.printStackTrace();
-			}			
+			}
 		}
 		System.out.println(jsonBuffer);
-		
+
 		//Section 3-2:趨勢資料庫讀取
 		ArrayList<GTrendData> GTD = new ArrayList<GTrendData>();
 		JSONObject J = new JSONObject(jsonBuffer);
@@ -175,11 +175,11 @@ public class DBCheck {
 			}
 			GTD.add(gtd);
 		}
-		
+
 		//Section 3-3:加入備註欄位
 		try
 		{
-			Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./GTrendHistory.json"),"UTF-8"));	
+			Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./GTrendHistory.json"),"UTF-8"));
 			JSONObject json = new JSONObject();				//JSON元件
 			try
 			{
@@ -212,7 +212,5 @@ public class DBCheck {
 		}}catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-
-		
 	}
 }

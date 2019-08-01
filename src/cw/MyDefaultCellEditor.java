@@ -24,14 +24,14 @@ public class MyDefaultCellEditor extends DefaultCellEditor{
             public void actionPerformed(ActionEvent e) {
             	//System.out.printf("%d %d\n",button.getRow(),button.getColum());
             	//詳細資料
-            	if(button.getColumn()==4) {		
+            	if(button.getColumn()==4) {
 	            	if(!totalCrawData.get(button.getRow()).get(0).getFindableBOOL())
 	            		return;
 	            	DetailData myDD = new DetailData(totalCrawData.get(button.getRow()));
             	}
             	//備註
             	else if(button.getColumn()==5) {
-            		
+
             		NoteUX myNote = new NoteUX(totalCrawData.get(button.getRow()).get(0).getNote(),0);
             		myNote.Run(saveUX, totalCrawData.get(button.getRow()));
             	}
@@ -41,13 +41,16 @@ public class MyDefaultCellEditor extends DefaultCellEditor{
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected, int row, int column) {
-    	if(column==4) {		
+    	if(column==4) {
     		button.setText(totalCrawData.get(row).get(0).getFindable());
     	}
     	else if(column==5) {
-    		button.setText("備註");
+    		String btnText = totalCrawData.get(row).get(0).getNote();
+    		if(btnText.length() >=5)
+    			button.setText(btnText.substring(0, 5));
+    		else
+    			button.setText(btnText);
     	}
-    	//button.setEnabled(totalCrawData.get(row).get(0).getFindableBOOL());
     	button.setRow(row);
 		button.setColumn(column);
         return button;

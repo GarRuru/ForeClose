@@ -13,9 +13,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Date;
-import java.util.EventObject;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,9 +28,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.event.CellEditorListener;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -46,13 +44,13 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 	public Timer Ctimer = new Timer();
 	public AutoCrawler AutoCW = new AutoCrawler();
 	private FrameToFrame me;
-	
-	
+
+
 	//UI 元件
 	private JTextField searchTextField;
 	private JLabel UpdateStatusLabel;
 
-	
+
 	//一般搜尋表格
 	private String[] tableCol = {"","關鍵字","案號","法院","狀態","備註"};	//第一個欄位是CheckBox
 	private Object[][] tableData;// = {{Boolean.FALSE,"0001", "基隆市北寧路199號","北院", "108/5/12"}};
@@ -60,12 +58,12 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 	private DefaultTableModel hTmodel;
 	private ArrayList<ArrayList<CrawData>> ACD = new ArrayList<ArrayList<CrawData>>();		//升級資料型態，因應詳細資料需求
 	//private ArrayList<ArrayList<CrawData>> totalCrawData = new ArrayList<ArrayList<CrawData>>();
-	
-	
-	public CRAWUX() 
+
+
+	public CRAWUX()
 	{
 		super();
-		me=this;
+		me = this;
 		setBounds(35, 76, 726, 485);
 		setLayout(null);
 		setVisible(true);
@@ -76,7 +74,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 
 		JLabel p0TitleLabel = new JLabel("法拍屋追蹤");
 		p0TitleLabel.setFont(new Font("微軟正黑體", Font.BOLD, 24));
-		p0TitleLabel.setBounds(23, 20, 172, 53);
+		p0TitleLabel.setBounds(7, 20, 172, 53);
 		add(p0TitleLabel);
 
 		JRadioButton crnoRadioBtn = new JRadioButton("依字號");
@@ -84,7 +82,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		add(crnoRadioBtn);
 
 		JRadioButton addrRadioBtn = new JRadioButton("依地址");
-		addrRadioBtn.setBounds(23, 77, 78, 23);
+		addrRadioBtn.setBounds(7, 77, 78, 23);
 		addrRadioBtn.setSelected(true);
 		add(addrRadioBtn);
 
@@ -93,17 +91,18 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		group.add(crnoRadioBtn);
 
 		searchTextField = new JTextField();
-		searchTextField.setBounds(23, 112, 571, 26);
+		searchTextField.setBounds(7, 112, 571, 26);
 		add(searchTextField);
 		searchTextField.setColumns(10);
-		
+
 		UpdateStatusLabel = new JLabel("上次更新時間： -");
-		UpdateStatusLabel.setBounds(23,146,260,26);
+		UpdateStatusLabel.setBounds(7, 146, 260, 26);
 		add(UpdateStatusLabel);
-				
+
 
 		JButton button = new JButton("加入追蹤清單");
 		button.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// 地址查詢
 				if (addrRadioBtn.isSelected()) {
@@ -123,10 +122,10 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 					if (!result.get(0).contains("Not")) {
 						System.out.println("找到惹");
 						for (String s : result)
-							System.out.print("[" + s + "]"); 
+							System.out.print("[" + s + "]");
 						//把搜尋結果的第一筆加到表格裡面
 						hTmodel.addRow(new Object[] { Boolean.FALSE,searchTextField.getText() , "", result.get(2).substring(2, 4) });
-						
+
 						setToTotalCrawData(totalData, crawPicker.getSelectedItem().toString(), true,searchTextField.getText());
 						searchTextField.setText("");	//清空搜尋框
 					} else {
@@ -154,7 +153,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 							for (String s : result)
 								System.out.print("[" + s + "]");
 							hTmodel.addRow(new Object[] { Boolean.FALSE, "", searchTextField.getText(), result.get(2).substring(2, 4) });
-							
+
 							setToTotalCrawData(totalData, crawPicker.getSelectedItem().toString(), false,searchTextField.getText());
 							System.out.println("你好");
 							searchTextField.setText("");
@@ -184,20 +183,18 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 					tableData[0][3] = "";
 					tableData[0][4] = "";
 					tableData[0][5] = "";
-					
+
 				}
 			}
-		
+
 		});
 
-		
+
 		button.setBounds(606, 112, 117, 29);
 		add(button);
 
 		// 表格部分
 		hTmodel = new DefaultTableModel(tableData, tableCol) {
-			private boolean ImInLoop = false;
-
 			@Override
 			public Class<?> getColumnClass(int columnIndex) {
 				if (tableData == null)
@@ -213,10 +210,10 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 			}
 		};
 		historyTable = new JTable(hTmodel);
-		historyTable.setBounds(23, 187, 684, 236);
+		historyTable.setBounds(7, 187, 684, 236);
 		historyTable.getTableHeader().setFont(new Font("微軟正黑體", Font.PLAIN, 15)); // Header Style
 		historyTable.setFont(new Font("微軟正黑體", Font.PLAIN, 16));
-		
+
 		// 詳細資料button設定
 		TableCellRenderer buttinRe = new TableCellRenderer() {
 			private DetailButton button = new DetailButton("");
@@ -226,6 +223,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 					boolean hasFocus, int row, int column) {
 				button.setText(ACD.get(row).get(0).getFindable());
 				//button.setEnabled(ACD.get(row).get(0).getFindableBOOL());
+				button.setHorizontalAlignment(SwingConstants.CENTER);
 				return button;
 			}
 		};
@@ -233,7 +231,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		MyDefaultCellEditor editor = new MyDefaultCellEditor(ACD,this);
 		historyTable.getColumnModel().getColumn(4).setCellEditor(editor);
 		historyTable.getColumnModel().getColumn(4).setCellRenderer(buttinRe);
-		
+
 		//備註button設定
 		TableCellRenderer noteButtonRe = new TableCellRenderer() {
 			private JButton button = new DetailButton("");
@@ -241,7 +239,12 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
-				button.setText("備註");
+				String btnText = ACD.get(row).get(0).getNote();
+	    		if(btnText.length() >=5)
+	    			button.setText(btnText.substring(0, 5));
+	    		else
+	    			button.setText(btnText);
+	    		button.setHorizontalAlignment(SwingConstants.CENTER);
 				return button;
 			}
 		};
@@ -249,14 +252,14 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		MyDefaultCellEditor noteEditor = new MyDefaultCellEditor(ACD,this);
 		historyTable.getColumnModel().getColumn(5).setCellEditor(noteEditor);
 		historyTable.getColumnModel().getColumn(5).setCellRenderer(noteButtonRe);
-		
-		
+
+
 		// 不能選取表格
 		historyTable.setRowSelectionAllowed(false);
 		historyTable.setRowHeight(30);
 		///////////
 		JScrollPane scrollPane = new JScrollPane(historyTable);
-		scrollPane.setBounds(23, 187, 702, 236);
+		scrollPane.setBounds(7, 187, 717, 236);
 		add(scrollPane);
 
 		//表格寬度設定
@@ -270,9 +273,11 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 			else if (i == 2)
 				column.setPreferredWidth(160);
 			else if (i == 3)
-				column.setPreferredWidth(100);
+				column.setPreferredWidth(15);
+			else if (i == 4)
+				column.setPreferredWidth(50);
 			else
-				column.setPreferredWidth(60);
+				column.setPreferredWidth(230);
 		}
 
 		// 下拉式選單的選項
@@ -301,6 +306,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 
 		JButton deleteSelItemBtn = new JButton("刪除");
 		deleteSelItemBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				for (int i = 0; i < historyTable.getRowCount(); i++) {
@@ -323,6 +329,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		allRefreshButton.setBounds(150, 450, 150, 30);
 		add(allRefreshButton);
 		allRefreshButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				int DBsize = ACD.size();
@@ -336,12 +343,12 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 						tempResult = Crawler.searchCrno(NO, alcd.get(0).getFULLCourt());
 						if(!tempResult.get(0).get(0).contains("Not"))
 						{
-							hTmodel.addRow(new Object[] { Boolean.FALSE, "", alcd.get(0).getKeyword(), tempResult.get(0).get(2).substring(0, 2) });
+							hTmodel.addRow(new Object[] { Boolean.FALSE, "", alcd.get(0).getKeyword(), tempResult.get(0).get(2).substring(2, 4) });
 							setToTotalCrawData(tempResult, alcd.get(0).getFULLCourt(), false, alcd.get(0).getKeyword());
 						}
 						else
 						{
-							hTmodel.addRow(new Object[] { Boolean.FALSE,"", alcd.get(0).getKeyword(), tempResult.get(0).get(1).substring(0, 2) });
+							hTmodel.addRow(new Object[] { Boolean.FALSE,"", alcd.get(0).getKeyword(), tempResult.get(0).get(1).substring(2, 4) });
 							setToTotalCrawData(tempResult, alcd.get(0).getFULLCourt(), false, alcd.get(0).getKeyword());
 						}
 					}catch(NumberFormatException nfe) {
@@ -352,21 +359,21 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 						System.out.println(tempResult);
 						if(!tempResult.get(0).get(0).contains("Not"))
 						{
-							hTmodel.addRow(new Object[] { Boolean.FALSE, alcd.get(0).getKeyword(),"", tempResult.get(0).get(2).substring(0, 2) });
+							hTmodel.addRow(new Object[] { Boolean.FALSE, alcd.get(0).getKeyword(),"", tempResult.get(0).get(2).substring(2, 4) });
 							setToTotalCrawData(tempResult, alcd.get(0).getFULLCourt(), true, alcd.get(0).getKeyword());
 						}
 						else
 						{
-							hTmodel.addRow(new Object[] { Boolean.FALSE, alcd.get(0).getKeyword(), "", tempResult.get(0).get(1).substring(0, 2) });
+							hTmodel.addRow(new Object[] { Boolean.FALSE, alcd.get(0).getKeyword(), "", tempResult.get(0).get(1).substring(2, 4) });
 							setToTotalCrawData(tempResult, alcd.get(0).getFULLCourt(), true, alcd.get(0).getKeyword());
 						}
-						
+
 					}
 					ACD.get(tempcount+DBsize).get(0).setNote(ACD.get(tempcount).get(0).getNote());	//寫入備註
 					tempcount++;
 
 				}
-				
+
 				for(int i=0;i<DBsize;i++)
 				{
 					ACD.remove(0);
@@ -377,14 +384,14 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 				UpdateStatusLabel.setText("上次更新時間: " + (Integer)(dd.getMonth()+1) + "/" + dd.getDate() + "  " +
 											dd.getHours() + ":" + dd.getMinutes());
 			}
-			
+
 		});
 
 		LoadConfig();	//一切就緒再讀config
 		ForceRefresh(); //先刷新資料
         tableView();	//準備表格呈現
-        
-        
+
+
         //Timer
         //if(UX.autoRefresh) {
         	Ctimer.schedule(new TimerTask() {
@@ -401,19 +408,19 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 							ForceRefresh();
 							System.out.println("[C]爬起來爬起來～");
 						}
-							
+
 						else
 							System.out.println("[C]爬蟲時間還沒到～");
 					}
-					
+
         		}
         	},0,60000);
        // }
-        
-        
-        
+
+
+
 	}
-	
+
 	public void setToTotalCrawData(ArrayList<ArrayList<String>> totalData, String court,Boolean ifAddress,String keyword) {
 		//傳入參數：搜尋全部結果、法院名稱、地址(true)/字號(false)查詢
 		//把當筆的搜尋記錄加入ACD
@@ -489,24 +496,24 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 					hTmodel.addRow(new Object[] { Boolean.FALSE, alcd.get(0).getKeyword(), "", tempResult.get(0).get(1).substring(0, 2) });
 					setToTotalCrawData(tempResult, alcd.get(0).getFULLCourt(), true, alcd.get(0).getKeyword());
 				}
-				
+
 			}
 			ACD.get(tempcount+DBsize).get(0).setNote(ACD.get(tempcount).get(0).getNote());	//寫入備註
 			tempcount++;
 		}
-		
+
 		for(int i=0;i<DBsize;i++)
-		{	
+		{
 			ACD.remove(0);
 			hTmodel.removeRow(0);
 		}
 		WriteConfig();
-		
+
 		//JOptionPane.showMessageDialog(null, "完成!","好了",JOptionPane.INFORMATION_MESSAGE);
 	}
-	
-	
-	
+
+
+
 	//從檔案讀取
 	private void LoadConfig()
 	{
@@ -534,13 +541,13 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 					reader.close();
 				}catch(IOException e1){
 					e1.printStackTrace();
-				}			
+				}
 			}
 		}
 		JSONParse(jsonBuffer);
 
 	}
-	
+
 	//字串解析、生成對應物件
 	private void JSONParse(String inputStream)
 	{
@@ -569,7 +576,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 		}
 		System.out.println("法拍屋歷史讀取完畢");
 	}
-	
+
 	private void tableView()
 	{
 		//準備表格顯示
@@ -594,20 +601,18 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 				//備註
 				tableData[i][5] = "備註";
 				hTmodel.addRow(tableData[i]);
-
 			}
 		}
 		else
 			tableData =  null;
 	}
-	
 	//負責將更新的內容寫入Config檔案
 	//呼叫時機：完成刷新流程之後
 	public void WriteConfig() //throws IOException
 	{
 		try
 		{
-		Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./CrawHistory.json"),"UTF-8"));	
+		Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./CrawHistory.json"),"UTF-8"));
 		JSONObject json = new JSONObject();				//JSON元件
 		try
 		{
@@ -641,22 +646,18 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 				}
 				name.put("Another",another);
 				jsonMember.put(name);
-				
 			}
-			
 			json.put("CRAW", jsonMember);
 			String writeString = json.toString();
 			ff.write(writeString);
 			ff.close();
 			System.out.println("成功寫入CrawHistory.json");
-	
-			
 		}catch(JSONException jse){
 			jse.printStackTrace();
 		}}catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
-		
+
 	}
 
 	@Override
@@ -666,7 +667,7 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 	        	int scheduleCrawTime = crawtime;
 				@Override
 				public void run()
-				{	        		
+				{
 					Date dd = new Date();
 					System.out.println(" [C']我又爬蟲了喔～");
 	        		if(dd.getHours()==scheduleCrawTime && dd.getMinutes()==0) {
@@ -676,7 +677,6 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 	        		else {
 	        			System.out.println("[C']爬蟲時間還沒到～");
 	        		}
-	
 				}
 			},0,60000);
 		}
@@ -698,71 +698,12 @@ public class CRAWUX extends JPanel implements FrameToFrame{
 	        		else {
 	        			System.out.println("[C'']爬蟲時間還沒到～");
 	        		}
-	
 				}
-			},0,60000);
+			}, 0, 60000);
 		}
 		else {
 			Ctimer.cancel();
 			Ctimer = new Timer();
 		}
-
-		
 	}
-
 }
-
-
-//allRefreshButton.addActionListener(new ActionListener() {
-//
-//@Override
-//public void actionPerformed(ActionEvent arg0) {
-//	// TODO Auto-generated method stub
-//	ACD.clear();
-//
-//	for (CrawData i : ACD) {
-//		if (i.getAddress().equals("")) {
-//			/*
-//			 * ArrayList<String> result; ArrayList<ArrayList<String>> totalData; totalData =
-//			 * Crawler.searchCrno(searchTextField.getText(),String.valueOf(crawPicker.
-//			 * getSelectedItem())); result = totalData.get(0);
-//			 * if(!result.get(0).contains("Not")) { hTmodel.addRow(new Object[]
-//			 * {Boolean.FALSE,result.get(0),result.get(1),result.get(2),"已公告"}); CrawData
-//			 * cwt = new
-//			 * CrawData(result.get(0),result.get(1),result.get(2),true,result.get(3),result.
-//			 * get(4),result.get(5),result.get(6)); ACD.add(cwt);
-//			 * setToTotalCrawData(totalData, crawPicker.getSelectedItem().toString(), true);
-//			 * } else { hTmodel.addRow(new Object[]
-//			 * {Boolean.FALSE,searchTextField.getText().toString(),"",crawPicker.
-//			 * getSelectedItem(),"未公告"}); CrawData cwt = new
-//			 * CrawData("",searchTextField.getText().toString(),crawPicker.getSelectedItem()
-//			 * .toString(),false,"","","",""); ACD.add(cwt); setToTotalCrawData(totalData,
-//			 * crawPicker.getSelectedItem().toString(), true); }
-//			 */
-//			// Crawler.searchCrno(Integer.parseInt(i.getNo()), i.getCourt());
-//
-//		} else if (i.getNo().equals("")) {
-//			/*
-//			 * ArrayList<String> result; ArrayList<ArrayList<String>> totalData; totalData =
-//			 * Crawler.searchCrno(Integer.parseInt(searchTextField.getText()),String.valueOf
-//			 * (crawPicker.getSelectedItem())); result = totalData.get(0);
-//			 * if(!result.get(0).contains("Not")) { hTmodel.addRow(new Object[]
-//			 * {Boolean.FALSE,result.get(0),result.get(1),result.get(2),"已找到"}); CrawData
-//			 * cwt = new
-//			 * CrawData(result.get(0),result.get(1),result.get(2),true,result.get(3),result.
-//			 * get(4),result.get(5),result.get(6)); ACD.add(cwt);
-//			 * setToTotalCrawData(totalData, crawPicker.getSelectedItem().toString(),
-//			 * false); } else { hTmodel.addRow(new Object[]
-//			 * {Boolean.FALSE,"",searchTextField.getText().toString(),crawPicker.
-//			 * getSelectedItem(),"未公告"}); CrawData cwt = new
-//			 * CrawData(searchTextField.getText().toString(),"",crawPicker.getSelectedItem()
-//			 * .toString(),false,"","","",""); ACD.add(cwt); setToTotalCrawData(totalData,
-//			 * crawPicker.getSelectedItem().toString(), false); }
-//			 */
-//			// Crawler.searchCrno(i.getAddress(), i.getCourt());
-//		}
-//	}
-//}
-// 
-//});
-

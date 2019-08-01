@@ -1,6 +1,5 @@
 package cw;
 
-import excel.ExcelFilter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -10,7 +9,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -26,19 +24,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import excel.ExcelFilter;
 
 public class ExcelReportUX extends JPanel{
 	private JTextField saveLocationField;
 	private JFileChooser FolderPicker;
 	private String currentPath = ".";
     public final String[] districtCourtList = {"臺灣台北地方法院", "臺灣新北地方法院", "臺灣士林地方法院", "臺灣桃園地方法院", "臺灣新竹地方法院", "臺灣苗栗地方法院",
-    		"臺灣臺中地方法院", "臺灣南投地方法院", "臺灣彰化地方法院", "臺灣雲林地方法院", "臺灣嘉義地方法院", "臺灣臺南地方法院", "臺灣橋頭地方法院", "臺灣高雄地方法院", 
+    		"臺灣臺中地方法院", "臺灣南投地方法院", "臺灣彰化地方法院", "臺灣雲林地方法院", "臺灣嘉義地方法院", "臺灣臺南地方法院", "臺灣橋頭地方法院", "臺灣高雄地方法院",
     		"臺灣屏東地方法院", "臺灣臺東地方法院", "臺灣花蓮地方法院", "臺灣宜蘭地方法院", "臺灣基隆地方法院", "臺灣澎湖地方法院", "福建金門地方法院", "福建連江地方法院"};
 
-	public ExcelReportUX() 
+	public ExcelReportUX()
 	{
 		super();
 		setBounds(35, 76, 726, 485);
@@ -47,19 +46,19 @@ public class ExcelReportUX extends JPanel{
 		setBorder(BorderFactory.createTitledBorder("Border"));
 		setBorder(BorderFactory.createLineBorder(Color.black));
 
-		
+
 		JLabel p1TitleLabel = new JLabel("法院報表匯出");
 		p1TitleLabel.setFont(new Font("微軟正黑體", Font.BOLD, 24));
 		p1TitleLabel.setBounds(23, 20, 172, 53);
 		add(p1TitleLabel);
-		
-		
+
+
 		ArrayList<JCheckBox> checkBoxList = new ArrayList<JCheckBox>();
-		
+
 		JCheckBox court0 = new JCheckBox("台北地方法院");
 		court0.setBounds(33, 76, 128, 23);
 		add(court0);
-		checkBoxList.add(court0);	
+		checkBoxList.add(court0);
 		JCheckBox court1 = new JCheckBox("新北地方法院");
 		court1.setBounds(33, 111, 128, 23);
 		add(court1);
@@ -144,17 +143,17 @@ public class ExcelReportUX extends JPanel{
 		court21.setBounds(525, 287, 128, 23);
 		add(court21);
 		checkBoxList.add(court21);
-				
-		
+
+
 		for(JCheckBox jcb: checkBoxList)
 		{
 			jcb.setFont(new Font("微軟正黑體",Font.BOLD,16));
 		}
-		
+
 		JLabel saveLocationLabel = new JLabel("保存位置");
 		saveLocationLabel.setBounds(23, 396, 61, 16);
 		add(saveLocationLabel);
-		
+
 		saveLocationField = new JTextField();
 		saveLocationField.setEditable(false);
 		saveLocationField.setBounds(96, 391, 479, 26);
@@ -169,6 +168,7 @@ public class ExcelReportUX extends JPanel{
 			saveLocationField.setText(currentPath);
 		JButton locationPickerBtn = new JButton("瀏覽...");
 		locationPickerBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				FolderPicker = new JFileChooser();
 				FolderPicker.setCurrentDirectory(new java.io.File(currentPath));
@@ -182,16 +182,16 @@ public class ExcelReportUX extends JPanel{
 					currentPath = FolderPicker.getSelectedFile().toString();
 					WriteConfig();
 				}
-				else System.out.println("取消操作");
-				
-	
+				else
+					System.out.println("取消操作");
 			}
 		});
 		locationPickerBtn.setBounds(587, 391, 82, 29);
 		add(locationPickerBtn);
-		
+
 		JButton exportBtn = new JButton("匯出指定報表");
 		exportBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int tempcount = 0,truecount = 0,result,errcount=0;
 				for(JCheckBox cb: checkBoxList)
@@ -204,19 +204,17 @@ public class ExcelReportUX extends JPanel{
 						if(result == -1)
 							errcount++;
 						java.util.Date today = new java.util.Date();
-						String fullDestPath = saveLocationField.getText() + "/" + 
-											  districtCourtList[tempcount] + "-" 
+						String fullDestPath = saveLocationField.getText() + "/" +
+											  districtCourtList[tempcount] + "-"
 						                        + String.format("%04d", today.getYear() + 1900)
 						                        + String.format("%02d", today.getMonth() + 1)
 						                        + String.format("%02d", today.getDate()) + ".xls";
-
-										
 						ExcelFilter eft = new ExcelFilter(fullDestPath);
 						eft.filter();
 					}
 					tempcount++;
 				}
-				
+
 				if(errcount == 0)
 					JOptionPane.showMessageDialog(null,truecount + "份報表已保存到"+saveLocationField.getText(),"匯出報表成功",JOptionPane.INFORMATION_MESSAGE);
 				else
@@ -225,9 +223,10 @@ public class ExcelReportUX extends JPanel{
 		});
 		exportBtn.setBounds(211, 438, 117, 29);
 		add(exportBtn);
-		
+
 		JButton pickallBtn = new JButton("全選");
 		pickallBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				for(JCheckBox cb :checkBoxList)
 				{
@@ -237,9 +236,10 @@ public class ExcelReportUX extends JPanel{
 		});
 		pickallBtn.setBounds(194, 35, 96, 29);
 		add(pickallBtn);
-		
+
 		JButton clearallBtn = new JButton("取消全選");
 		clearallBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				for(JCheckBox cb :checkBoxList)
 				{
@@ -250,9 +250,10 @@ public class ExcelReportUX extends JPanel{
 		});
 		clearallBtn.setBounds(295, 35, 96, 29);
 		add(clearallBtn);
-		
+
 		JButton openFolderBtn = new JButton("開啟輸出資料夾");
 		openFolderBtn.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					String os = System.getProperty("os.name").toLowerCase();
@@ -268,12 +269,12 @@ public class ExcelReportUX extends JPanel{
 		});
 		openFolderBtn.setBounds(370, 438, 140, 29);
 		add(openFolderBtn);
-		
+
 		//介面先準備好再讀路徑
 		LoadData();
 
 	}
-	
+
 	private void LoadData()
 	{
 		String jsonBuffer = "";
@@ -310,24 +311,24 @@ public class ExcelReportUX extends JPanel{
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void WriteConfig() //throws IOException
 	{
 		try{
 			Writer ff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./path.json"),"UTF-8"));
 			JSONObject json = new JSONObject();				//JSON元件
 			try{
-				json.put("LastSavedLocation", currentPath);		
+				json.put("LastSavedLocation", currentPath);
 				String writeString = json.toString();
 				ff.write(writeString);
 				ff.close();
-				System.out.println("成功寫入path.json");	
-			}catch(JSONException jse){
+				System.out.println("成功寫入path.json");
+			} catch(JSONException jse){
 				jse.printStackTrace();
-		}}catch(IOException ioe) {
+			}
+		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
-		
 	}
 
 

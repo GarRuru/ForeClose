@@ -15,7 +15,7 @@ import javax.swing.JOptionPane;
 
 public class DetailData extends JFrame{
 	private ArrayList<CrawData> detailCrawData = new ArrayList<CrawData>();
-	
+
 	public DetailData(ArrayList<CrawData> ACD) {
 		detailCrawData = ACD;
 		getContentPane().setLayout(null);
@@ -48,7 +48,7 @@ public class DetailData extends JFrame{
 			JLabel crmnoLabel;
 			if(i.getNo().isEmpty())
 				crmnoLabel = new JLabel(i.getNo());//.substring(7));
-			else 
+			else
 				crmnoLabel = new JLabel(i.getNo().substring(7));
 			crmnoLabel.setBounds(420, 30 * index, 100, 30);
 			JLabel sellDateLabel = new JLabel(i.getsellDate());
@@ -61,7 +61,7 @@ public class DetailData extends JFrame{
 			websiteButton.setBounds(820, 30 * index, 60, 30);
 			if(i.getWebsite().equals(""))
 				websiteButton.setEnabled(false);
-			
+
 			websiteButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent event) {
@@ -74,16 +74,16 @@ public class DetailData extends JFrame{
 	                    System.out.println("Open url fail");
 	                }
 				}
-				
+
 			});
-			
+
 			getContentPane().add(addressLabel);
 			getContentPane().add(crmnoLabel);
 			getContentPane().add(sellDateLabel);
 			getContentPane().add(priceLabel);
 			getContentPane().add(handoverLabel);
 			getContentPane().add(websiteButton);
-			
+
 			index++;
 		}
 		//frame設定
