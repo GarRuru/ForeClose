@@ -42,7 +42,9 @@ public class DBCheck {
 			ioe.printStackTrace();
 		}
 		//Section 2-1: 法拍屋讀檔
+		
 		String tempString = "";
+		/*
 		try
 		{
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream("./CrawHistory.json"),"UTF-8"));
@@ -136,7 +138,7 @@ public class DBCheck {
 				ioe.printStackTrace();
 			}
 
-
+		*/
 		//Section 3-1:Google趨勢資料庫讀取
 		jsonBuffer = "";
 		tempString = "";

@@ -31,7 +31,7 @@ public class UX {
 	public String ConfigLoadString;
 
 	//設定類參數: 定時爬蟲相關
-	public static int currentDBVersion = 27;
+	public static int currentDBVersion = 28;
 	public static boolean autoRefresh;
 	public static int updateHR;
 	private FrameToFrame me;
@@ -208,7 +208,7 @@ public class UX {
 				aboutUS.setBounds(150,150,400,200);
 				aboutUS.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				aboutUS.getContentPane().setLayout(null);
-				JLabel intro = new JLabel("法拍屋爬蟲系統 2.72");
+				JLabel intro = new JLabel("法拍屋爬蟲系統 2.73");
 				intro.setBounds(10,0,400,100);
 				intro.setFont(new Font("微軟正黑體",Font.PLAIN,13));
 				JLabel intro2 = new JLabel("作者：鄒承皓、陳育祥、陳育軒\n");

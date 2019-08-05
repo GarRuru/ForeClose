@@ -13,6 +13,7 @@ public class GTrendData {
 		address = "";
 		searchCount = new ArrayList<Integer>();
 		recordDate = new ArrayList<String>();
+		note = "";
 	}
 
 	public void setAddress(String addr)
